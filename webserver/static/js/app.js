@@ -169,7 +169,7 @@
   /**
    * Sidebar Tool Tab Switching with Smooth Sliding Indicators & Directional Panel Animations
    */
-  let currentTabIndex = 1; // Default is tabShapeColor (index 1)
+  let currentTabIndex = 0; // Default is tabContent (index 0)
 
   function setupToolTabs() {
     const tabButtons = document.querySelectorAll('[data-tool-tab]');

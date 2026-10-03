@@ -125,7 +125,7 @@ html.theme-transitioning *::after {
   background-color: var(--deco-c);
 }
 
-/* Device Shell */
+/* Device Shell: 2-Zone Balanced Layout */
 .shell {
   background-color: var(--frame);
   border-radius: var(--r-frame);
@@ -134,7 +134,7 @@ html.theme-transitioning *::after {
   position: relative;
   z-index: 10;
   width: 100%;
-  max-width: 1260px;
+  max-width: 1040px;
   margin: 0 auto;
 }
 
@@ -142,18 +142,18 @@ html.theme-transitioning *::after {
   background-color: var(--card);
   border-radius: var(--r-card);
   display: grid;
-  grid-template-columns: 360px 1fr 300px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 360px);
   gap: 20px;
-  padding: 22px;
-  min-height: min(720px, calc(100vh - 48px));
+  padding: 24px;
+  min-height: min(680px, calc(100vh - 48px));
   align-items: stretch;
 }
 
-/* ZONE 1: Left Sidebar Area */
+/* ZONE 1: Left Tool Sidebar Area */
 .sidebar-zone {
   display: flex;
-  gap: 14px;
-  align-items: flex-start;
+  gap: 16px;
+  align-items: stretch;
   min-width: 0;
   height: 100%;
 }
@@ -180,7 +180,7 @@ html.theme-transitioning *::after {
   flex-shrink: 0;
 }
 
-/* Sliding pill indicator inside rail */
+/* Sliding pill indicator inside rail - Standard Slide (No bounce/overshoot) */
 .rail-indicator {
   position: absolute;
   top: 0;
@@ -189,10 +189,10 @@ html.theme-transitioning *::after {
   height: 44px;
   border-radius: var(--r-pill);
   background-color: var(--navy);
-  box-shadow: 0 4px 14px rgba(30, 38, 116, 0.32);
+  box-shadow: 0 4px 12px rgba(30, 38, 116, 0.25);
   pointer-events: none;
   z-index: 1;
-  transition: transform 320ms cubic-bezier(0.34, 1.45, 0.64, 1);
+  transition: transform 240ms cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
 }
 
@@ -240,7 +240,7 @@ html.theme-transitioning *::after {
   background-color: var(--frame);
   border: 1px solid var(--line);
   border-radius: var(--r-panel);
-  padding: 18px;
+  padding: 20px;
   flex: 1;
   min-width: 0;
   height: 100%;
@@ -268,7 +268,7 @@ html.theme-transitioning *::after {
 }
 
 .sidebar-tool-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -276,11 +276,11 @@ html.theme-transitioning *::after {
   margin: 0;
 }
 
-/* Smooth Entrance Animations for Form Panels */
+/* Standard Slide Entrance Animations for Form Panels (No bounce/overshoot) */
 @keyframes slideDownIn {
   from {
     opacity: 0;
-    transform: translateY(-14px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
@@ -291,7 +291,7 @@ html.theme-transitioning *::after {
 @keyframes slideUpIn {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -307,14 +307,36 @@ html.theme-transitioning *::after {
 
 .tool-tab-panel.is-active {
   display: block;
+  opacity: 1;
 }
 
 .tool-tab-panel.slide-from-bottom {
-  animation: slideUpIn 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideUpIn 220ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 .tool-tab-panel.slide-from-top {
-  animation: slideDownIn 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideDownIn 220ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Main Textarea inside Tab 1 */
+.main-textarea {
+  width: 100%;
+  min-height: 190px;
+  background-color: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 120ms ease;
+}
+
+.main-textarea:focus {
+  outline: none;
+  border-color: var(--sky);
 }
 
 /* Color Row Styling in Sidebar */
@@ -392,52 +414,7 @@ html.theme-transitioning *::after {
   color: #FFFFFF !important;
 }
 
-/* ZONE 2: Center Zone: Input */
-.center-zone {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 8px 12px;
-  min-width: 0;
-}
-
-.center-heading {
-  font-family: var(--font-ui);
-  font-size: clamp(24px, 3.2vw, 40px);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--heading);
-  margin: 0 0 6px 0;
-  line-height: 1.15;
-}
-
-.center-subtitle {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin: 0 0 18px 0;
-}
-
-.main-textarea {
-  width: 100%;
-  min-height: 220px;
-  background-color: var(--field);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 18px;
-  font-family: var(--font-mono);
-  font-size: 16px;
-  color: var(--text);
-  line-height: 1.5;
-  resize: vertical;
-  transition: border-color 120ms ease;
-}
-
-.main-textarea:focus {
-  outline: none;
-  border-color: var(--sky);
-}
-
-/* ZONE 3: Right Zone: Clean Navy Preview Panel */
+/* ZONE 2: Right Navy Preview Panel */
 .panel {
   background-color: var(--navy);
   color: var(--on-navy);
@@ -445,7 +422,7 @@ html.theme-transitioning *::after {
   display: flex;
   flex-direction: column;
   padding: 22px;
-  min-height: 380px;
+  min-height: 480px;
   height: 100%;
   justify-content: space-between;
 }
@@ -461,13 +438,13 @@ html.theme-transitioning *::after {
 .qr-preview-card {
   background-color: #FFFFFF;
   border-radius: var(--r-qr);
-  padding: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 250px;
+  max-width: 260px;
   aspect-ratio: 1 / 1;
   margin: auto auto;
   overflow: hidden;
@@ -575,14 +552,6 @@ html.theme-transitioning *::after {
    RESPONSIVE LAYOUTS (Tablet & Mobile)
    ======================================================== */
 
-@media (max-width: 1120px) and (min-width: 1024px) {
-  .shell-inner {
-    grid-template-columns: 320px 1fr 270px;
-    gap: 14px;
-    padding: 16px;
-  }
-}
-
 @media (max-width: 1023px) {
   .shell-inner {
     display: flex;
@@ -621,10 +590,10 @@ html.theme-transitioning *::after {
     left: 0;
     border-radius: 8px;
     background-color: var(--navy);
-    box-shadow: 0 2px 10px rgba(30, 38, 116, 0.25);
+    box-shadow: 0 2px 8px rgba(30, 38, 116, 0.2);
     pointer-events: none;
     z-index: 1;
-    transition: transform 280ms cubic-bezier(0.34, 1.3, 0.64, 1), width 280ms ease;
+    transition: transform 240ms cubic-bezier(0.25, 1, 0.5, 1), width 240ms cubic-bezier(0.25, 1, 0.5, 1);
     will-change: transform, width;
   }
 
@@ -663,19 +632,15 @@ html.theme-transitioning *::after {
     background: transparent !important;
   }
 
-  /* Responsive order */
-  .center-zone {
-    order: 1;
-  }
-
+  /* Responsive order: Preview first, Tool tabs second */
   .panel {
-    order: 2;
+    order: 1;
     height: auto;
     min-height: auto;
   }
 
   .sidebar-zone {
-    order: 3;
+    order: 2;
     width: 100%;
     flex-direction: column;
     height: auto;
@@ -683,6 +648,7 @@ html.theme-transitioning *::after {
 
   .sidebar-tool-content {
     width: 100%;
+    min-height: auto;
     max-height: none;
   }
 }
@@ -746,22 +712,9 @@ html.theme-transitioning *::after {
     font-size: 14px;
   }
 
-  .center-zone {
-    padding: 2px;
-  }
-
-  .center-heading {
-    font-size: 22px;
-  }
-
-  .center-subtitle {
-    margin-bottom: 10px;
-    font-size: 12px;
-  }
-
   .main-textarea {
-    font-size: 16px;
-    min-height: 100px;
+    font-size: 15px;
+    min-height: 120px;
     padding: 12px;
     border-radius: 12px;
   }

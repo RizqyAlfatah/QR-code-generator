@@ -88,7 +88,7 @@
 
       <div class="shell-inner">
         
-        <!-- ZONE 1: Left Sidebar Zone (Rail + Tool Panel) -->
+        <!-- ZONE 1: Tool Sidebar Zone (Rail + Tool Panel) -->
         <aside class="sidebar-zone" aria-label="Tool Settings">
           
           <!-- Desktop Rail Column (Icons: Text, Shape/Color, Frame, Logo, Theme) -->
@@ -109,8 +109,8 @@
               <!-- Sliding Active Indicator Pill -->
               <div class="rail-indicator" id="railIndicator" aria-hidden="true"></div>
 
-              <!-- 1. Text Shortcut -->
-              <button type="button" class="rail-btn" data-tool-tab="tabContent" data-tab-index="0" title="Enter Text / URL" aria-label="Text & Content Editor">
+              <!-- 1. Text Shortcut (Default Active) -->
+              <button type="button" class="rail-btn active" data-tool-tab="tabContent" data-tab-index="0" title="Enter Text / URL" aria-label="Text & Content Editor">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="4 7 4 4 20 4 20 7"></polyline>
                   <line x1="9" y1="20" x2="15" y2="20"></line>
@@ -118,8 +118,8 @@
                 </svg>
               </button>
 
-              <!-- 2. Shape & Color (Default Active) -->
-              <button type="button" class="rail-btn active" data-tool-tab="tabShapeColor" data-tab-index="1" title="Shape & Color" aria-label="Shape and Color Settings">
+              <!-- 2. Shape & Color -->
+              <button type="button" class="rail-btn" data-tool-tab="tabShapeColor" data-tab-index="1" title="Shape & Color" aria-label="Shape and Color Settings">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="4"></circle>
                   <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"></path>
@@ -169,7 +169,15 @@
             <!-- Sliding Mobile Active Indicator -->
             <div class="mobile-tab-indicator" id="mobileTabIndicator" aria-hidden="true"></div>
 
-            <button type="button" class="mobile-tab-btn active" data-tool-tab="tabShapeColor" data-tab-index="1" role="tab" aria-selected="true">
+            <button type="button" class="mobile-tab-btn active" data-tool-tab="tabContent" data-tab-index="0" role="tab" aria-selected="true">
+              <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                <line x1="9" y1="20" x2="15" y2="20"></line>
+                <line x1="12" y1="4" x2="12" y2="20"></line>
+              </svg>
+              <span>Text</span>
+            </button>
+            <button type="button" class="mobile-tab-btn" data-tool-tab="tabShapeColor" data-tab-index="1" role="tab" aria-selected="false">
               <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="4"></circle>
                 <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"></path>
@@ -196,8 +204,24 @@
           <!-- Sidebar Tool Content Panels -->
           <div class="sidebar-tool-content">
             
-            <!-- PANEL 1: SHAPE & COLOR (Default Active) -->
-            <div id="tabShapeColor" class="tool-tab-panel is-active">
+            <!-- PANEL 1: ENTER YOUR TEXT (Default Active) -->
+            <div id="tabContent" class="tool-tab-panel is-active">
+              <div class="sidebar-tool-header">
+                <h2 class="sidebar-tool-title">Enter your text</h2>
+                <span class="text-[11px] text-[var(--text-muted)] font-mono">Content & Data</span>
+              </div>
+
+              <div class="space-y-3.5">
+                <p class="text-xs text-[var(--text-muted)]">Your QR code will be generated automatically</p>
+
+                <textarea id="qrDataInput" name="data" rows="7" placeholder="https://example.com" class="main-textarea">https://github.com/rizqyalfatah</textarea>
+                
+                <p class="text-[11px] text-[var(--text-muted)]">Accepts standard web URLs, plain text data, or payload strings.</p>
+              </div>
+            </div>
+
+            <!-- PANEL 2: SHAPE & COLOR -->
+            <div id="tabShapeColor" class="tool-tab-panel">
               <div class="sidebar-tool-header">
                 <h2 class="sidebar-tool-title">Shape & Color</h2>
                 <span class="text-[11px] text-[var(--text-muted)] font-mono">Palette & Pattern</span>
@@ -358,7 +382,7 @@
               </div>
             </div>
 
-            <!-- PANEL 2: FRAME & CAPTION -->
+            <!-- PANEL 3: FRAME & CAPTION -->
             <div id="tabFrame" class="tool-tab-panel">
               <div class="sidebar-tool-header">
                 <h2 class="sidebar-tool-title">Frame & Caption</h2>
@@ -474,7 +498,7 @@
               </div>
             </div>
 
-            <!-- PANEL 3: CENTER LOGO -->
+            <!-- PANEL 4: CENTER LOGO -->
             <div id="tabLogo" class="tool-tab-panel">
               <div class="sidebar-tool-header">
                 <h2 class="sidebar-tool-title">Center Logo</h2>
@@ -506,43 +530,10 @@
               </div>
             </div>
 
-            <!-- PANEL 4: TEXT / CONTENT INFO -->
-            <div id="tabContent" class="tool-tab-panel">
-              <div class="sidebar-tool-header">
-                <h2 class="sidebar-tool-title">Content & Text</h2>
-                <span class="text-[11px] text-[var(--text-muted)] font-mono">Input helper</span>
-              </div>
-
-              <div class="space-y-3 text-xs text-[var(--text-muted)]">
-                <p>The QR code is automatically generated and updated in real-time as you type in the center editor.</p>
-                <div class="p-3 bg-[var(--card)] border border-[var(--line)] rounded-[10px] space-y-1.5">
-                  <div class="font-semibold text-[var(--heading)]">Supported Formats:</div>
-                  <ul class="list-disc list-inside space-y-1 text-[11px]">
-                    <li>Web URLs (<span class="font-mono">https://…</span>)</li>
-                    <li>Plain Text / Notes</li>
-                    <li>Contact strings & payloads</li>
-                  </ul>
-                </div>
-                <button type="button" id="focusEditorBtn" class="w-full py-2 px-3 rounded-[10px] bg-[var(--field)] border border-[var(--line)] text-[var(--heading)] font-semibold text-xs hover:border-[var(--sky)] transition-colors">
-                  Edit Text in Center &rarr;
-                </button>
-              </div>
-            </div>
-
           </div>
         </aside>
 
-        <!-- ZONE 2: Middle Zone (Large Textarea & Heading) -->
-        <main class="center-zone" id="centerInputZone">
-          <h1 class="center-heading">Enter your text</h1>
-          <p class="center-subtitle">Your QR code will be generated automatically</p>
-
-          <textarea id="qrDataInput" name="data" rows="6" placeholder="https://example.com" class="main-textarea">https://github.com/rizqyalfatah</textarea>
-          
-          <p class="text-xs text-[var(--text-muted)] mt-2">Accepts standard web URLs, plain text data, or payload strings.</p>
-        </main>
-
-        <!-- ZONE 3: Right Navy Panel (Clean Live Preview + Download HD) -->
+        <!-- ZONE 2: Right Navy Panel (Clean Live Preview + Download HD) -->
         <aside class="panel" aria-label="QR Output & Download">
           
           <!-- Panel Header: Live Preview status -->
