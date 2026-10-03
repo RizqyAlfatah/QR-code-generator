@@ -1,16 +1,16 @@
-# DESIGN.md — QR Code Generator
+# DESIGN.md — QR Code Generator (Redesign)
 
-Design system untuk web **QR Code Generator** (high-resolution QR dengan styling dan frame kustom, live preview, download PNG 1300px). Palet inti diambil dari Color Hunt: `#2F39A9`, `#2E6FA0`, `#49A4BB`, `#15D8B3`. Warna netral (background, surface, teks) diturunkan dari hue indigo palet tersebut.
+Redesign tampilan QR Code Generator mengikuti **gambar referensi** (kartu "device" putih di atas latar biru muda, panel biru tua di kanan berisi QR dan accordion, heading besar "Enter your text" di tengah, rail ikon vertikal di kiri). Semua **fitur yang sudah ada tetap dipertahankan**; hanya tampilan dan penempatan yang berubah. Palet memakai Color Hunt: `#2F39A9`, `#2E6FA0`, `#49A4BB`, `#15D8B3`.
 
 ---
 
 ## 1. Design Read
 
-- **Produk:** alat kerja satu halaman. Pengguna mengisi data, mengatur tampilan, lalu mengunduh QR.
-- **Tugas utama layar:** mengubah pengaturan dan langsung melihat hasilnya, lalu mengunduh. Preview dan tombol download adalah pusat halaman; panel konfigurasi mendukungnya.
-- **Karakter:** tenang, presisi, teknis tapi ramah. Seperti alat studio, bukan landing page.
-- **Tema:** **dark default** karena ini alat yang dipakai berlama-lama dan preview QR berlatar putih jadi fokus alami. Sediakan light theme lewat toggle (token ada di bagian 2.2).
-- **Anti-slop:** tanpa gradient, glow, glassmorphism, shadow tebal, badge pill dekoratif, emoji, atau data palsu. Hierarki dibentuk lewat warna, border, dan ukuran.
+- **Produk:** alat satu halaman untuk membuat QR dengan styling kustom dan mengunduh PNG 1300px.
+- **Tugas layar:** ketik isi QR, atur tampilan, lihat hasil langsung, unduh. Alur dibaca kiri ke kanan: input, lalu panel hasil.
+- **Karakter:** bersih, cerah, percaya diri. Ruang putih lega di kiri, panel biru tua padat di kanan sebagai titik berat.
+- **Tema:** **light default** (sesuai referensi), dark tersedia lewat toggle. Panel kanan tetap biru tua di kedua tema sebagai ciri khas.
+- **Aksen:** mint `#15D8B3` hanya untuk tombol Download dan status sukses.
 
 ---
 
@@ -20,272 +20,307 @@ Design system untuk web **QR Code Generator** (high-resolution QR dengan styling
 
 | Token | Hex | Peran |
 |---|---|---|
-| `--indigo` | `#2F39A9` | Warna brand. Fill tombol sekunder, chip nomor section aktif |
-| `--steel` | `#2E6FA0` | Border aktif, hover fill, state terpilih |
-| `--sky` | `#49A4BB` | Link, ikon aktif, focus ring, teks aksen |
-| `--mint` | `#15D8B3` | **Satu-satunya aksen.** Tombol Download dan status sukses |
+| `--indigo` | `#2F39A9` | Baris accordion di panel, chip aktif, fill tombol sekunder |
+| `--steel` | `#2E6FA0` | Lingkaran dekor besar, hover, state terpilih ringan |
+| `--sky` | `#49A4BB` | Border tile terpilih di panel, link, focus ring, lingkaran dekor kecil |
+| `--mint` | `#15D8B3` | **Satu-satunya aksen**: tombol Download dan status "Up to date" |
 
-Aturan pemakaian: 3 warna pertama membangun UI; **mint hanya muncul di momen kunci** (Download, "Up to date"). Jangan dipakai di ikon, border, atau hover umum.
+### 2.2 Netral turunan
 
-### 2.2 Netral turunan (dark default)
+| Token | Light | Dark | Penggunaan |
+|---|---|---|---|
+| `--page-bg` | `#EAF0FC` | `#080B1F` | Latar halaman |
+| `--frame` | `#FFFFFF` | `#11143A` | Bingkai luar kartu utama |
+| `--card` | `#F4F7FD` | `#0F1330` | Isi kartu (area kiri) |
+| `--field` | `#FFFFFF` | `#171C45` | Textarea dan input di area kiri |
+| `--line` | `#D5D9F0` | `#252B5C` | Border dan garis pemisah |
+| `--heading` | `#1E2674` | `#FFFFFF` | Heading besar |
+| `--text` | `#12163A` | `#E8EAFB` | Teks isi |
+| `--text-muted` | `#5A6190` | `#9AA0D0` | Label, helper, caption |
+| `--navy` | `#1E2674` | `#1E2674` | Panel kanan (sama di kedua tema) |
+| `--on-navy` | `#FFFFFF` | `#FFFFFF` | Teks di panel kanan |
+| `--on-navy-muted` | `#B9BFEA` | `#B9BFEA` | Label dan helper di panel kanan |
+| `--on-mint` | `#080B1F` | `#080B1F` | Teks di atas tombol mint |
 
-| Token | Hex | Penggunaan |
-|---|---|---|
-| `--bg` | `#080B1F` | Latar halaman |
-| `--surface` | `#0F1330` | Panel Configuration dan Live Preview |
-| `--surface-raised` | `#171C45` | Header section accordion, input, hover baris |
-| `--border` | `#252B5C` | Garis pemisah dan border panel |
-| `--text` | `#E8EAFB` | Teks utama |
-| `--text-muted` | `#9AA0D0` | Label, helper text, caption |
-| `--on-mint` | `#080B1F` | Teks di atas tombol mint (bukan putih) |
-| `--on-indigo` | `#FFFFFF` | Teks di atas fill indigo |
+State: `--danger #FF6B6B`, `--warning #F5B84B` (warna tambahan di luar palet; kontras di atas navy ≥ 5:1).
 
-**Light theme (toggle):** `--bg #F5F6FD`, `--surface #FFFFFF`, `--surface-raised #ECEEFA`, `--border #D5D9F0`, `--text #12163A`, `--text-muted #5A6190`. Di light theme `--sky` untuk teks diganti `#2E6FA0` agar kontras cukup; mint tetap hanya untuk tombol (dengan `--on-mint`).
-
-### 2.3 Warna state
-
-| Token | Hex | Penggunaan |
-|---|---|---|
-| `--danger` | `#FF6B6B` | Error input, URL tidak valid |
-| `--warning` | `#F5B84B` | Peringatan kontras QR rendah |
-| `--success` | `#15D8B3` | Sama dengan mint, untuk status nyata ("Up to date") |
-
-### 2.4 Kontras (sudah dihitung)
+### 2.3 Kontras (dihitung)
 
 | Kombinasi | Rasio | Catatan |
 |---|---|---|
-| `--on-mint` di atas `--mint` | ± 10:1 | Lulus AAA. **Jangan pakai teks putih di mint (± 1.8:1)** |
-| Putih di atas `--indigo` | ± 9:1 | Lulus AAA |
-| `--sky` di atas `--bg` | ± 6.6:1 | Aman untuk link dan teks aksen |
-| `--steel` di atas `--bg` | ± 3.5:1 | Hanya border dan komponen UI besar, bukan teks isi |
-| `--indigo` di atas `--bg` | ± 2:1 | Hanya sebagai fill, jangan jadi teks atau garis penting |
+| `--on-mint` di atas `--mint` | ± 10:1 | Jangan pakai teks putih di mint (± 1.8:1) |
+| `--mint` di atas `--navy` | ± 7.7:1 | Aman untuk tombol dan teks status di panel |
+| Putih di atas `--indigo` | ± 9:1 | Baris accordion |
+| `--sky` di atas `--indigo` | ± 3.2:1 | Hanya untuk border/komponen UI, bukan teks |
+| `--heading` di atas `--card` (light) | > 10:1 | Aman |
 
-### 2.5 Tipografi
+### 2.4 Tipografi
 
-- **UI:** `Inter`, fallback `system-ui, sans-serif`. Alasan: alat kerja butuh keterbacaan tinggi di ukuran kecil.
-- **Data teknis:** `JetBrains Mono` untuk URL, hex warna, ukuran px, nomor section, dan status. Alasan: nilai-nilai ini memang data yang perlu dibandingkan karakter per karakter.
+- **UI:** `Inter` (fallback `system-ui, sans-serif`).
+- **Data teknis:** `JetBrains Mono` untuk isi textarea (URL), nilai hex, nomor, dan status. Alasannya: nilai ini adalah data yang dibaca karakter per karakter.
 
-| Peran | Ukuran | Berat |
-|---|---|---|
-| Judul halaman | 24px | 700 |
-| Judul section accordion | 16px | 600 |
-| Label field | 13px | 500, `--text-muted` |
-| Input / isi | 15px | 400 |
-| Status & nomor (mono) | 12–13px | 500 |
-| Caption | 12px | 400 |
+| Peran | Desktop | Mobile | Berat |
+|---|---|---|---|
+| Heading besar ("Enter your text") | 48px, tracking -0.02em | 28px | 700 |
+| Judul accordion | 14px | 14px | 600 |
+| Label field | 13px | 13px | 500 |
+| Textarea | 18px mono | 16px mono | 400 |
+| Hex / status | 12–13px mono | 12px mono | 500 |
+| Caption/helper | 13px | 12px | 400 |
 
-Gunakan sentence case. Hindari uppercase dengan letter-spacing lebar untuk label biasa; uppercase hanya untuk judul panel kecil ("CONFIGURATION", "LIVE PREVIEW") bila memang dipertahankan, dengan tracking sedang (≤ 0.04em).
+Gunakan `clamp()` untuk heading agar mulus di antara breakpoint. Tidak ada uppercase dengan tracking lebar kecuali judul accordion bila diinginkan (tracking ≤ 0.04em).
 
-### 2.6 Spacing, radius, elevasi
+### 2.5 Radius, spacing, elevasi
 
-- **Spacing:** 4 / 8 / 12 / 16 / 24 / 32 / 48 px.
-- **Radius:** `6px` (input, chip), `10px` (tombol, field group), `14px` (panel, preview card). **Tidak ada pill.**
-- **Elevasi:** nol shadow. Panel dibedakan dari latar dengan `--surface` + border 1px `--border`.
-- **Border:** `1px solid var(--border)`; state aktif memakai `--steel`.
+- **Radius:** frame luar `32px`, kartu dalam `26px`, panel kanan `22px`, item accordion `14px`, tile & input `12px`, QR card `18px`, rail dan tombol Download `9999px` (pill, **hanya dua elemen ini**).
+- **Spacing:** 4 / 8 / 12 / 16 / 24 / 32 / 48.
+- **Elevasi:** hanya **satu** shadow lembut pada kartu utama: `0 24px 60px -24px rgba(30,38,116,.28)`. Komponen lain datar, dibedakan dengan warna dan border.
+- Tanpa gradient, glow, backdrop blur, atau animasi berulang.
 
 ---
 
 ## 3. Layout
 
-### Desktop (≥ 1024px)
+### 3.1 Desktop (≥ 1024px)
 
-- Container max-width ± 1400px, padding horizontal 24–32px, terpusat.
-- Header: ikon aplikasi (36px, radius 10px, fill `--indigo`), judul, subjudul satu baris, garis bawah `--border`.
-- Dua kolom: **Configuration (kiri, ± 7/12)** dan **Live Preview (kanan, ± 5/12)**, gap 24px.
-- Panel preview bersifat **sticky** (`top: 24px`) agar tetap terlihat saat panel kiri di-scroll.
+Latar `--page-bg` dengan **tiga lingkaran dekor datar** (lihat 3.4). Di tengah, kartu utama:
 
-### Tablet (≈ 640–1023px)
+- Frame luar `--frame` tebal 10px (radius 32px) membungkus kartu dalam `--card` (radius 26px). Lebar maks 1240px, tinggi `min(760px, 100dvh - 48px)` dengan minimum 640px; jika layar lebih pendek, halaman boleh scroll.
+- Isi kartu dibagi tiga zona dalam grid: `64px | 1fr | 380px` (panel 340px pada lebar < 1180px), gap 24px, padding 24px.
 
-- Satu kolom, preview di atas dengan lebar maksimum 420px dan terpusat; Configuration di bawahnya selebar penuh. Jangan meregangkan layout phone atau menjejalkan layout desktop.
+**Zona kiri: rail (64px).**
+- Atas: ikon aplikasi 36px (kotak radius 10px, fill `--indigo`, ikon putih) diikuti nama "QR Code Generator" 14px/600 bila ruang cukup; rail itu sendiri berada di bawah ikon.
+- Rail: kapsul vertikal putih (`--frame`), padding 8px, item 40px bulat. Item aktif: fill `--navy`, ikon putih. Item lain: ikon `--text-muted`.
+- Isi rail (semua nyata, bukan placeholder):
+  1. Content (ikon teks): fokus ke textarea
+  2. Shape & Color (ikon palet): buka accordion tersebut
+  3. Logo (ikon gambar): buka accordion tersebut
+  4. Frame (ikon bingkai): buka accordion tersebut
+  - Bawah rail: toggle tema (matahari/bulan).
+- Tooltip label saat hover/focus dan `aria-label` di setiap tombol. Rail **disembunyikan** di bawah 1024px.
 
-### Mobile (< 640px)
+**Zona tengah: input.**
+- Heading `h1` "Enter your text" (atau "Enter your URL or text") berwarna `--heading`, rata kiri, diletakkan sejajar vertikal dengan sisi atas atau sedikit di bawah tengah.
+- Helper di bawahnya: "Your QR code will be generated automatically" (13px, muted), dihubungkan dengan status Live Sync yang nyata.
+- Textarea besar: `--field`, border 1px `--line`, radius 16px, min-height 180px, padding 20px, font mono 18px, placeholder `https://example.com`.
+- Di bawah textarea: helper "Accepts standard web URLs, plain text data, or payload strings."
+- Tidak ada elemen dekoratif tambahan di zona ini.
 
-- Satu kolom, **urutan: Preview, tombol Download, lalu Configuration**. Pengguna melihat hasil dulu; perubahan di bawah langsung tercermin saat dia scroll ke atas.
-- QR card selebar layar dikurangi padding 16px, maksimum 360px. Preview **tidak sticky** di mobile agar tidak memakan layar.
-- Padding section turun ke 16px; judul 20px; tidak ada padding desktop (48px+) yang terbawa.
-- Tombol Download selebar penuh, tinggi 48px.
-- Tanpa horizontal scroll. Input pakai `min-width: 0` dan `max-width: 100%`.
+**Zona kanan: panel navy (380px).** Lihat 4.3.
+
+### 3.2 Tablet (768–1023px)
+
+- Satu kolom, padding halaman 24px. Rail disembunyikan, ikon aplikasi dan toggle tema berada di baris atas kartu.
+- Heading 36px; textarea min-height 140px.
+- Panel navy selebar penuh kartu, maks 640px, terpusat; QR card maks 280px.
+- Hanya lingkaran dekor A yang tampil (dikecilkan).
+
+### 3.3 Mobile (< 768px)
+
+- Padding halaman 12px, frame luar radius 24px (border 6px), padding kartu dalam 16px.
+- Baris atas: ikon aplikasi + nama, toggle tema di kanan (target 44px).
+- Heading 28px; textarea min-height 120px, font 16px (mencegah zoom otomatis di iOS).
+- Panel navy selebar penuh, radius 20px, padding 16px.
+- **Urutan di dalam panel mobile:** status, QR card (maks 100% lebar, 280px), **tombol Download** (selebar penuh, tinggi 48px), lalu accordion. Tombol tidak boleh terdorong jauh dari QR.
+- Accordion: satu terbuka pada satu waktu. Isi accordion tidak memakai tinggi tetap.
+- Lingkaran dekor disembunyikan. Tidak ada horizontal scroll pada 320px.
+
+### 3.4 Lingkaran dekor (motif merek)
+
+Tiga lingkaran **solid, datar, tanpa blur dan tanpa gradient**, diposisikan di belakang kartu, sebagian keluar layar:
+
+| Lingkaran | Ukuran | Posisi | Warna (light / dark) |
+|---|---|---|---|
+| A | ± 560px | kiri atas | `--navy` / `--navy` |
+| B | ± 120px | tepi kanan tengah | `--sky` / `--steel` |
+| C | ± 420px | kanan bawah | `--steel` / `--indigo` |
+
+`aria-hidden="true"`, `pointer-events: none`, wrapper `overflow: clip`. Mint **tidak** dipakai di lingkaran.
 
 ---
 
 ## 4. Komponen
 
-### 4.1 Panel (Configuration & Live Preview)
+### 4.1 Tombol tema
 
-- Latar `--surface`, border 1px `--border`, radius 14px.
-- Header panel: judul kecil kiri, status kanan, tinggi ± 48px, garis bawah `--border`.
-- Header kanan Configuration berisi "Live Sync". Teks ini harus mewakili sinkronisasi nyata (preview ter-update otomatis), bukan dekorasi.
+Berada di bawah rail (desktop) atau baris atas (tablet/mobile). Label aksesibel "Switch to dark theme" / "Switch to light theme". Menyimpan pilihan di `localStorage` bila sudah ada logika serupa; jika tidak, ikuti `prefers-color-scheme`.
 
-### 4.2 Accordion section (01–04)
+### 4.2 Textarea input
 
-Urutan: `01 Content & Data`, `02 Color Palette`, `03 Pattern & Center Logo`, `04 Frame & Typography`.
+Lihat 3.1. State error (mis. input kosong atau terlalu panjang untuk QR): border `--danger` 2px + pesan 12px di bawahnya. Fokus: outline 2px `--sky`, offset 2px.
 
-- Header: tinggi 56px, latar `--surface-raised`, nomor mono 12px di kiri (chip 28px, radius 6px; aktif = fill `--indigo` + teks putih, tidak aktif = teks `--sky`), judul 16px/600, chevron kanan.
-- Hanya satu section terbuka pada satu waktu di mobile; di desktop boleh beberapa terbuka.
-- Isi section: padding 16–24px, label di atas input, gap antar field 16px.
-- Animasi buka-tutup: `grid-template-rows: 0fr → 1fr` selama 150–200ms. Konten **tidak boleh terpotong** (hindari tinggi tetap + `overflow: hidden`).
-- Chevron berputar 180° saat terbuka. Header berupa `<button>` dengan `aria-expanded` dan `aria-controls`.
+### 4.3 Panel navy (QR + pengaturan + download)
 
-### 4.3 Field input
+Latar `--navy`, teks `--on-navy`, radius 22px, padding 20px, tinggi penuh zona (desktop), `display: flex; flex-direction: column`.
 
-- Tinggi 44px, latar `--surface-raised`, border 1px `--border`, radius 6px, teks 15px.
-- Label 13px `--text-muted` di atas input, jarak 6px. Label tidak boleh menempel atau tertutup header section berikutnya.
-- Focus: outline 2px `--sky`, offset 2px. Error: border `--danger` + pesan 12px di bawah field.
-- Field URL/teks memakai `JetBrains Mono`; placeholder `https://example.com` (placeholder jujur, tanpa data palsu).
+Susunan desktop dari atas ke bawah:
 
-### 4.4 Pemilih warna (Color Palette)
+1. **Baris status:** kiri "Live Preview" (13px, `--on-navy-muted`), kanan status mono 12px ("Up to date" `--mint`, "Updating…" `--on-navy-muted`, error `--danger`). Di sebelahnya boleh ada ikon grid kecil seperti referensi hanya bila fungsional; jika tidak, hilangkan.
+2. **QR card:** putih `#FFFFFF`, radius 18px, padding 16px, QR maks 248px, terpusat. **QR card tetap putih** (dan memakai warna yang dipilih pengguna) agar quiet zone dan kontras scan terjaga.
+3. **Area accordion (scrollable):** `flex: 1; overflow-y: auto` dengan scrollbar tipis. Tiga item, urutan seperti referensi: **Frame**, **Shape & Color**, **Logo**. Default: Shape & Color terbuka. Satu terbuka pada satu waktu.
+4. **Tombol Download (menempel di bawah panel):** pill, fill `--mint`, teks `--on-mint` 600, tinggi 48px, lebar penuh, ikon download 18px kiri. Teks: "Download HD (1300px)". Di bawahnya caption 12px `--on-navy-muted`: "PNG 1300px, dibuat oleh server Python".
 
-- Dua field: **Foreground** dan **Background** QR, masing-masing swatch 40px (radius 6px) + input hex mono.
-- Preset cepat 4 warna palet (indigo, steel, sky, mint) sebagai swatch 32px, berlabel aksesibel.
-- **Validasi scan:** hitung rasio kontras foreground/background. Di bawah ± 4:1 atau saat foreground lebih terang dari background, tampilkan peringatan `--warning`: "Kontras rendah, QR mungkin sulit dipindai". Mint sebagai foreground di atas putih (± 1.8:1) harus memicu peringatan ini.
+### 4.4 Item accordion (di dalam panel)
 
-### 4.5 Pemilih bentuk (Module Shape / Frame Style)
+- Header: tinggi 48px, fill `--indigo`, radius 14px, judul 14px/600 putih, chevron kanan. `<button>` dengan `aria-expanded` dan `aria-controls`.
+- Isi: fill `--indigo`, padding 16px, pemisah atas `rgba(255,255,255,.14)`. Animasi `grid-template-rows 0fr → 1fr` 180ms; konten tidak boleh terpotong.
+- Gap antar item 8px.
 
-- Grup opsi berupa kotak 64px berisi gambar mini bentuk aslinya, radius 10px, border `--border`.
-- Terpilih: border `--steel` 2px + latar `--surface-raised`. Tanpa glow.
-- Gunakan `role="radiogroup"` dengan navigasi panah.
+### 4.5 Pemetaan fitur lama ke posisi baru
 
-### 4.6 Live Preview
+| Fitur saat ini | Posisi baru |
+|---|---|
+| 01 Content & Data (textarea URL/teks) | Zona tengah: textarea besar |
+| 02 Color Palette: preset 4 swatch | Accordion **Shape & Color**, baris swatch paling atas |
+| 02 Foreground (Dots), Eyes Color, Background Color | Accordion **Shape & Color**, tiga baris ringkas |
+| 03 Module Shape (Square, Circle, Rounded, Vertical, Horizontal, Circuit) | Accordion **Shape & Color**, di bawah warna, grid 3 kolom |
+| 03 Center Logo (file upload) | Accordion **Logo**, dropzone bergaris putus-putus |
+| 04 Frame Style (None, Top, Bottom, Bubble, Label) | Accordion **Frame**, baris tile |
+| 04 Typography (teks frame, font, dsb. sesuai kode yang ada) | Accordion **Frame**, di bawah tile |
+| Live Preview + status "Up to date" | Panel navy, baris status + QR card |
+| Download HD (1300px) | Panel navy, tombol mint |
+| Toggle Dark/Light theme | Rail bawah (desktop) / baris atas (lainnya) |
 
-- Kartu putih (`#FFFFFF`) radius 14px, padding 24px. **Kartu QR selalu putih** terlepas dari tema, agar quiet zone dan kontras scan terjaga.
-- Teks frame (misalnya "SCAN ME") mengikuti warna foreground QR yang dipilih, bukan merah bawaan. Default memakai `--indigo`.
-- Status kanan atas: "Up to date" (mono 12px, `--success`) hanya muncul saat gambar memang sudah sinkron; saat sedang render tampilkan "Updating…" dalam `--text-muted`; saat gagal tampilkan pesan `--danger`.
+Jangan menambah fitur yang tidak ada di aplikasi (lihat bagian 8).
 
-### 4.7 Tombol
+### 4.6 Baris warna (di dalam panel)
 
-| Varian | Gaya | Penggunaan |
-|---|---|---|
-| Primary | Fill `--mint`, teks `--on-mint`, 600, radius 10px, tinggi 48px | **Download HD (1300px)**. Hanya satu per layar |
-| Secondary | Fill `--indigo`, teks putih | Aksi lain (mis. Reset) |
-| Ghost | Transparan, border `--border`, teks `--text` | Aksi tersier |
+- Satu baris = swatch 32px (radius 8px, border putih 1px 30%) + label 13px (+ deskripsi singkat 12px `--on-navy-muted`) + hex mono 12px di kanan. Seluruh baris adalah target klik ≥ 44px tingginya.
+- Preset: 4 swatch 36px dengan label aksesibel (Black, Indigo, Steel, Sky); terpilih = border 2px `--sky`.
+- **Peringatan kontras:** bila rasio foreground/background < ± 4:1 atau foreground lebih terang dari background, tampilkan peringatan `--warning` dengan ikon dan teks: "Contrast too low, the QR may not scan."
 
-- Hover primary: gelapkan mint ± 8%. Hover secondary: pindah ke `--steel`. Active: geser 1px ke bawah, tanpa animasi berlebih.
-- Disabled: opacity 0.4 dan `cursor: not-allowed`. Tombol Download disabled bila input kosong atau tidak valid, disertai alasan yang terlihat.
-- Ikon download 18px di kiri label. Tidak ada panah dekoratif.
-- Caption di bawah tombol: "PNG 1300px, dibuat oleh server Python" (12px, `--text-muted`). Tulis hanya hal yang benar.
+### 4.7 Tile pilihan (Module Shape & Frame Style)
 
-### 4.8 Empty, loading, error
+- Grid 3 kolom (shape) dan 5 kolom yang membungkus (frame), tile min 56×56px, fill `--navy`, border 1px `rgba(255,255,255,.18)`, radius 12px, ikon 20px di atas label 12px.
+- Terpilih: border 2px `--sky`, teks putih. Tidak ada glow.
+- `role="radiogroup"`, navigasi panah.
 
-- **Input kosong:** preview menampilkan area kosong dengan teks "Masukkan URL atau teks untuk membuat QR" dan fokus otomatis ke field Destination. Download disabled.
-- **Loading:** "Updating…" di header preview; QR lama tetap tampil (jangan dikosongkan agar tidak berkedip).
-- **Error server:** pesan spesifik ("Gagal membuat QR: server tidak merespons") dengan tombol "Coba lagi".
+### 4.8 Dropzone Center Logo
+
+- Kotak border 1.5px putus-putus `rgba(255,255,255,.4)`, radius 14px, padding 16px, tombol bulat 36px (fill `--sky`, ikon upload gelap) + teks "Choose a PNG or SVG" dan helper "Transparent background recommended."
+- Menggantikan input file bawaan browser ("Choose File / No file chosen"). Tetap memakai `<input type="file">` sungguhan di belakangnya agar keyboard dan screen reader berfungsi; mendukung klik dan drag-and-drop.
+- Setelah dipilih: tampilkan thumbnail 32px, nama file, dan tombol "Remove".
+
+### 4.9 State kosong, loading, error
+
+- **Input kosong:** QR card menampilkan teks "Enter text to generate a QR code"; tombol Download disabled dengan alasan terlihat.
+- **Loading:** QR lama tetap tampil, status "Updating…".
+- **Error server:** pesan spesifik dan tombol "Try again".
 
 ---
 
 ## 5. Motion
 
-- Hanya transisi fungsional: buka-tutup accordion (150–200ms), hover/focus (≤ 120ms), pergantian QR (fade 100ms).
-- Tidak ada pulse, float, atau loop tanpa pemicu. Hormati `prefers-reduced-motion` dengan menonaktifkan transisi non-esensial.
+Hanya fungsional: accordion 180ms, hover/focus ≤ 120ms, pergantian QR fade 100ms, ganti tema 150ms. Tidak ada animasi berulang. Hormati `prefers-reduced-motion`.
 
 ---
 
 ## 6. Aksesibilitas
 
-- Semua kontrol bisa dioperasikan dengan keyboard; urutan tab mengikuti urutan visual (Content, Color, Pattern, Frame, lalu Download).
-- Focus ring 2px `--sky` pada semua elemen interaktif, tidak pernah dihapus.
-- Target sentuh minimum 44×44px dengan jarak antar target ≥ 8px.
-- Gambar QR diberi `alt` yang menyebut isi yang dikodekan; status preview memakai `aria-live="polite"`.
-- Warna tidak jadi satu-satunya pembawa makna: error dan warning selalu disertai teks atau ikon.
+- Urutan tab: toggle tema, textarea, rail (jika tampil), accordion, tombol Download.
+- Focus ring 2px `--sky` (di atas navy gunakan `#FFFFFF`) pada semua elemen interaktif.
+- Target sentuh ≥ 44×44px dengan jarak ≥ 8px.
+- Status preview memakai `aria-live="polite"`; gambar QR punya `alt` yang menyebut isi yang dikodekan.
+- Warna bukan satu-satunya pembawa makna (error/warning selalu disertai ikon dan teks).
 
 ---
 
-## 7. Masalah di tampilan saat ini (perlu diperbaiki)
-
-Dari screenshot versi sekarang:
-
-1. **Body accordion terpotong.** Label "Destination URL or Text", "Module Shape", dan "Frame Style" tampak tertimpa header section berikutnya, dan section 02 hanya menampilkan sliver kosong. Penyebab umum: tinggi tetap + `overflow: hidden`. Perbaiki dengan teknik `grid-template-rows` (bagian 4.2).
-2. **Teks "SCAN ME" merah** tidak terkait dengan palet. Ikuti warna foreground QR (bagian 4.6).
-3. **Tombol Download hijau dengan teks putih** kontrasnya rendah. Ganti ke mint `#15D8B3` dengan teks gelap `--on-mint`.
-4. **Label "CONFIGURATION" dan "LIVE PREVIEW"** uppercase boleh dipertahankan, tapi pastikan tracking sedang dan warnanya `--text-muted`.
-5. **Preview tidak terlihat penuh** pada tinggi layar laptop kecil: pastikan panel kanan sticky dan QR + tombol Download muat dalam satu layar (QR max ± 400px di desktop).
-
----
-
-## 8. CSS variables
+## 7. CSS variables
 
 ```css
 :root {
-  /* palet inti (Color Hunt) */
   --indigo: #2F39A9;
   --steel:  #2E6FA0;
   --sky:    #49A4BB;
   --mint:   #15D8B3;
 
-  /* netral dark (default) */
-  --bg: #080B1F;
-  --surface: #0F1330;
-  --surface-raised: #171C45;
-  --border: #252B5C;
-  --text: #E8EAFB;
-  --text-muted: #9AA0D0;
-  --on-mint: #080B1F;
-  --on-indigo: #FFFFFF;
+  --page-bg: #EAF0FC;
+  --frame: #FFFFFF;
+  --card: #F4F7FD;
+  --field: #FFFFFF;
+  --line: #D5D9F0;
+  --heading: #1E2674;
+  --text: #12163A;
+  --text-muted: #5A6190;
 
-  /* state */
+  --navy: #1E2674;
+  --on-navy: #FFFFFF;
+  --on-navy-muted: #B9BFEA;
+  --on-mint: #080B1F;
+
   --danger: #FF6B6B;
   --warning: #F5B84B;
-  --success: var(--mint);
 
   --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-
-  --space-1: 4px;  --space-2: 8px;  --space-3: 12px;
-  --space-4: 16px; --space-6: 24px; --space-8: 32px; --space-12: 48px;
+  --r-frame: 32px; --r-card: 26px; --r-panel: 22px;
+  --r-item: 14px;  --r-tile: 12px; --r-qr: 18px; --r-pill: 9999px;
 }
 
-:root[data-theme="light"] {
-  --bg: #F5F6FD;
-  --surface: #FFFFFF;
-  --surface-raised: #ECEEFA;
-  --border: #D5D9F0;
-  --text: #12163A;
-  --text-muted: #5A6190;
+:root[data-theme="dark"] {
+  --page-bg: #080B1F;
+  --frame: #11143A;
+  --card: #0F1330;
+  --field: #171C45;
+  --line: #252B5C;
+  --heading: #FFFFFF;
+  --text: #E8EAFB;
+  --text-muted: #9AA0D0;
 }
 
-.btn-primary {
-  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
-  height: 48px; padding: 0 var(--space-6);
-  border-radius: var(--radius-md);
-  background: var(--mint); color: var(--on-mint);
-  font: 600 16px/1 var(--font-ui);
+.shell {
+  background: var(--frame);
+  border-radius: var(--r-frame);
+  padding: 10px;
+  box-shadow: 0 24px 60px -24px rgba(30, 38, 116, .28);
 }
-.btn-primary:disabled { opacity: .4; cursor: not-allowed; }
-
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+.shell-inner {
+  background: var(--card);
+  border-radius: var(--r-card);
+  display: grid;
+  grid-template-columns: 64px 1fr 380px;
+  gap: 24px; padding: 24px;
 }
 
-:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+.panel { background: var(--navy); color: var(--on-navy); border-radius: var(--r-panel);
+         display: flex; flex-direction: column; padding: 20px; min-height: 0; }
+.panel-scroll { flex: 1; overflow-y: auto; min-height: 0; }
 
-/* accordion tanpa pemotongan konten */
+.btn-download {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; height: 48px; border-radius: var(--r-pill);
+  background: var(--mint); color: var(--on-mint); font: 600 16px/1 var(--font-ui);
+}
+.btn-download:disabled { opacity: .4; cursor: not-allowed; }
+
 .acc-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .18s ease; }
 .acc-body[data-open="true"] { grid-template-rows: 1fr; }
 .acc-body > div { overflow: hidden; min-height: 0; }
 
-@media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
-}
+:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+.panel :focus-visible { outline-color: #fff; }
+
+@media (max-width: 1179px) { .shell-inner { grid-template-columns: 64px 1fr 340px; } }
+@media (max-width: 1023px) { .shell-inner { grid-template-columns: 1fr; } .rail { display: none; } }
+@media (max-width: 767px)  { .deco { display: none; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 ```
 
 ---
 
-## 9. Do & Don't
+## 8. Do & Don't
 
 **Do**
-- Jadikan preview QR dan tombol Download titik fokus; sisanya pendukung.
-- Pakai mint hanya untuk Download dan status sukses nyata.
-- Tampilkan state kosong, loading, dan error dengan penyebab serta langkah berikutnya.
-- Uji lebar layar dari 320px sampai 1440px, bukan hanya dua titik.
+- Pertahankan semua fitur dan perilaku yang sudah ada; pindahkan, jangan hapus.
+- Jadikan panel navy sebagai titik berat visual; mint hanya untuk Download dan status sukses.
+- Pastikan QR card selalu putih dan menampilkan warna pilihan pengguna.
+- Uji pada 320, 375, 768, 1024, 1440px, tema light dan dark.
 
 **Don't**
-- Jangan menambah gradient, glow, glassmorphism, atau shadow besar.
+- Jangan menambah fitur yang muncul di gambar referensi tetapi tidak ada di aplikasi: upload file apa saja, tombol JPG atau SVG/EPS, rail jenis konten (email, SMS, Wi-Fi, dst.). Boleh ditawarkan sebagai saran terpisah.
+- Jangan memakai gradient, blur, glow, atau lingkaran dekor lebih dari tiga.
 - Jangan memakai teks putih di atas mint.
-- Jangan memakai emoji, badge "AI Powered", atau titik status dekoratif.
-- Jangan mengisi field dengan data palsu (John Doe, contoh@email.com yang tampak seperti data asli); pakai placeholder jujur.
-- Jangan memakai warna palet di luar peran yang ditentukan di bagian 2.1.
+- Jangan mengisi field dengan data palsu; gunakan placeholder jujur.
+- Jangan memakai tombol/ikon rail yang tidak punya perilaku nyata.
+- Jangan mengubah backend, endpoint, atau logika render QR (hanya lapisan tampilan).

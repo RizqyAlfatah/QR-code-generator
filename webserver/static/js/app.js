@@ -1,12 +1,16 @@
 /**
  * QR Code Generator - Client Logic
- * Implements DESIGN.md:
- * - Debounced preview with AbortController
- * - Color contrast scanner validation (WCAG-based)
- * - Preset palettes
- * - Section chip active states
- * - Empty state & download validation
- * - Light/Dark theme switching
+ * Simplified Sidebar Tool Navigation + Clean Live Preview & Download
+ * 
+ * Features:
+ * - Sidebar tool tabs (Desktop rail + Mobile tab bar)
+ * - Clean right navy panel (Status, Compact White QR Card, Mint Download HD)
+ * - Lossless 1300px HD download via Python backend
+ * - Debounced live preview with AbortController
+ * - Zero-flicker light/dark theme switcher
+ * - Contrast scanner & WCAG warning
+ * - Drag-and-drop logo upload
+ * - Form state persistence across reloads
  */
 
 (() => {
@@ -16,6 +20,7 @@
   const form = document.getElementById('qrForm');
   const qrDataInput = document.getElementById('qrDataInput');
   const previewImg = document.getElementById('qrImage');
+  const previewLoader = document.getElementById('previewLoader');
   const previewEmpty = document.getElementById('previewEmpty');
   const previewError = document.getElementById('previewError');
   const previewErrorMsg = document.getElementById('previewErrorMsg');
@@ -24,15 +29,17 @@
   const downloadBtn = document.getElementById('downloadBtn');
   const downloadCaption = document.getElementById('downloadCaption');
   const frameExtra = document.getElementById('frameExtra');
+  const logoDropzone = document.getElementById('logoDropzone');
   const logoInput = document.getElementById('logoInput');
   const logoInfo = document.getElementById('logoFileInfo');
   const logoName = document.getElementById('logoFileName');
   const clearLogoBtn = document.getElementById('clearLogoBtn');
   const contrastWarning = document.getElementById('contrastWarning');
-  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  const focusEditorBtn = document.getElementById('focusEditorBtn');
 
-  // Request Management
+  // Request & State Management
   let activeAbortController = null;
+  const SETTINGS_KEY = 'qr_form_settings_v3';
 
   /**
    * Utility: Debounce function execution
@@ -45,10 +52,8 @@
     };
   }
 
-  const SETTINGS_KEY = 'qr_form_settings';
-
   /**
-   * Form Settings Persistence (Remembers last used colors and values on reload)
+   * Form Settings Persistence
    */
   function saveSettings() {
     if (!form) return;
@@ -115,16 +120,15 @@
   }
 
   /**
-   * Theme Manager (Zero-flicker reload & smooth click transitions)
+   * Theme Management (Light default, Dark optional)
    */
   function initTheme() {
-    // Read the current theme already established by synchronous <head> script
     const currentTheme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('qr_theme') || 'light';
     applyThemeUI(currentTheme);
 
-    if (themeToggleBtn) {
-      themeToggleBtn.addEventListener('click', () => {
-        // Enable smooth transition ONLY during user click
+    const toggleButtons = document.querySelectorAll('.themeToggleBtn');
+    toggleButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
         document.documentElement.classList.add('theme-transitioning');
         
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -139,36 +143,144 @@
         localStorage.setItem('qr_theme', nextTheme);
         applyThemeUI(nextTheme);
 
-        // Remove transition class after animation completes
         setTimeout(() => {
           document.documentElement.classList.remove('theme-transitioning');
-        }, 200);
+        }, 180);
       });
-    }
+    });
   }
 
   function applyThemeUI(theme) {
-    const moonIcon = document.getElementById('themeIconMoon');
-    const sunIcon = document.getElementById('themeIconSun');
+    const moonIcons = document.querySelectorAll('.themeIconMoon');
+    const sunIcons = document.querySelectorAll('.themeIconSun');
+    const labels = document.querySelectorAll('.themeLabel');
 
     if (theme === 'dark') {
-      if (moonIcon) moonIcon.classList.add('hidden');
-      if (sunIcon) sunIcon.classList.remove('hidden');
+      moonIcons.forEach(el => el.classList.add('hidden'));
+      sunIcons.forEach(el => el.classList.remove('hidden'));
+      labels.forEach(el => el.textContent = 'Light');
     } else {
-      if (moonIcon) moonIcon.classList.remove('hidden');
-      if (sunIcon) sunIcon.classList.add('hidden');
-    }
-
-    if (themeToggleBtn) {
-      const themeLabel = themeToggleBtn.querySelector('[data-theme-label]');
-      if (themeLabel) {
-        themeLabel.textContent = theme === 'dark' ? 'Light theme' : 'Dark theme';
-      }
+      moonIcons.forEach(el => el.classList.remove('hidden'));
+      sunIcons.forEach(el => el.classList.add('hidden'));
+      labels.forEach(el => el.textContent = 'Dark');
     }
   }
 
   /**
-   * Relative Luminance Calculation (WCAG 2.1)
+   * Sidebar Tool Tab Switching with Smooth Sliding Indicators & Directional Panel Animations
+   */
+  let currentTabIndex = 1; // Default is tabShapeColor (index 1)
+
+  function setupToolTabs() {
+    const tabButtons = document.querySelectorAll('[data-tool-tab]');
+    const tabPanels = document.querySelectorAll('.tool-tab-panel');
+    const railIndicator = document.getElementById('railIndicator');
+    const mobileIndicator = document.getElementById('mobileTabIndicator');
+
+    function updateRailIndicator(targetBtn) {
+      if (!railIndicator || !targetBtn) return;
+      railIndicator.style.transform = `translateY(${targetBtn.offsetTop}px)`;
+    }
+
+    function updateMobileIndicator(targetBtn) {
+      if (!mobileIndicator || !targetBtn) return;
+      mobileIndicator.style.width = `${targetBtn.offsetWidth}px`;
+      mobileIndicator.style.transform = `translateX(${targetBtn.offsetLeft}px)`;
+    }
+
+    function activateTab(tabId, clickedBtn = null) {
+      if (!tabId) return;
+
+      let newIndex = currentTabIndex;
+      if (clickedBtn && clickedBtn.hasAttribute('data-tab-index')) {
+        newIndex = parseInt(clickedBtn.getAttribute('data-tab-index'), 10);
+      } else {
+        const found = document.querySelector(`[data-tool-tab="${tabId}"][data-tab-index]`);
+        if (found) newIndex = parseInt(found.getAttribute('data-tab-index'), 10);
+      }
+
+      const isSlidingDown = newIndex >= currentTabIndex;
+      currentTabIndex = newIndex;
+
+      // Update button active states and move indicators smoothly
+      tabButtons.forEach(btn => {
+        const match = btn.getAttribute('data-tool-tab') === tabId;
+        if (match) {
+          btn.classList.add('active');
+          if (btn.hasAttribute('aria-selected')) {
+            btn.setAttribute('aria-selected', 'true');
+          }
+          if (btn.closest('.rail-capsule')) {
+            updateRailIndicator(btn);
+          }
+          if (btn.closest('.mobile-tool-tabs')) {
+            updateMobileIndicator(btn);
+          }
+        } else {
+          btn.classList.remove('active');
+          if (btn.hasAttribute('aria-selected')) {
+            btn.setAttribute('aria-selected', 'false');
+          }
+        }
+      });
+
+      // Show the selected tool panel with directional slide & fade animation
+      tabPanels.forEach(panel => {
+        if (panel.id === tabId) {
+          panel.classList.remove('slide-from-bottom', 'slide-from-top');
+          void panel.offsetWidth; // Force reflow to retrigger CSS animation smoothly
+          panel.classList.add('is-active');
+          if (isSlidingDown) {
+            panel.classList.add('slide-from-bottom');
+          } else {
+            panel.classList.add('slide-from-top');
+          }
+        } else {
+          panel.classList.remove('is-active', 'slide-from-bottom', 'slide-from-top');
+        }
+      });
+
+      // Special action for Content tab: focus the main textarea
+      if (tabId === 'tabContent' && qrDataInput) {
+        qrDataInput.focus();
+      }
+    }
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.getAttribute('data-tool-tab');
+        activateTab(targetTab, btn);
+      });
+    });
+
+    // Initialize indicator positions
+    const initialRailBtn = document.querySelector('.rail-capsule .rail-btn.active');
+    if (initialRailBtn) {
+      updateRailIndicator(initialRailBtn);
+    }
+    const initialMobileBtn = document.querySelector('.mobile-tool-tabs .mobile-tab-btn.active');
+    if (initialMobileBtn) {
+      setTimeout(() => updateMobileIndicator(initialMobileBtn), 50);
+    }
+
+    // Keep indicators aligned on window resize
+    window.addEventListener('resize', debounce(() => {
+      const activeRail = document.querySelector('.rail-capsule .rail-btn.active');
+      if (activeRail) updateRailIndicator(activeRail);
+      const activeMobile = document.querySelector('.mobile-tool-tabs .mobile-tab-btn.active');
+      if (activeMobile) updateMobileIndicator(activeMobile);
+    }, 100));
+
+    if (focusEditorBtn && qrDataInput) {
+      focusEditorBtn.addEventListener('click', () => {
+        qrDataInput.focus();
+        qrDataInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+  }
+
+  /**
+   * WCAG Relative Luminance
    */
   function getLuminance(hex) {
     const cleanHex = hex.replace('#', '');
@@ -185,7 +297,7 @@
   }
 
   /**
-   * Contrast Ratio Check (DESIGN.md Section 4.4)
+   * Contrast Ratio Check (DESIGN.md 4.6)
    */
   function checkContrastValidation() {
     if (!contrastWarning) return;
@@ -199,7 +311,6 @@
     const darker = Math.min(lumFg, lumBg);
     const ratio = (lighter + 0.05) / (darker + 0.05);
 
-    // Warning if contrast < 4:1 or foreground is lighter than background
     const isLowContrast = ratio < 4.0 || lumFg > lumBg;
 
     if (isLowContrast) {
@@ -217,48 +328,48 @@
 
     if (state === 'updating') {
       previewStatus.textContent = 'Updating…';
-      previewStatus.className = 'font-mono text-xs text-[var(--text-muted)]';
+      previewStatus.className = 'font-mono text-xs text-[var(--on-navy-muted)]';
+      if (previewLoader) previewLoader.classList.remove('hidden');
     } else if (state === 'success') {
       previewStatus.textContent = 'Up to date';
       previewStatus.className = 'font-mono text-xs text-[var(--mint)]';
+      if (previewLoader) previewLoader.classList.add('hidden');
       if (previewError) previewError.classList.add('hidden');
     } else if (state === 'error') {
       previewStatus.textContent = 'Gagal membuat QR';
       previewStatus.className = 'font-mono text-xs text-[var(--danger)]';
+      if (previewLoader) previewLoader.classList.add('hidden');
       if (previewError && previewErrorMsg) {
         previewErrorMsg.textContent = message || 'Server tidak merespons. Silakan coba lagi.';
         previewError.classList.remove('hidden');
       }
     } else if (state === 'empty') {
       previewStatus.textContent = 'Input kosong';
-      previewStatus.className = 'font-mono text-xs text-[var(--text-muted)]';
+      previewStatus.className = 'font-mono text-xs text-[var(--on-navy-muted)]';
+      if (previewLoader) previewLoader.classList.add('hidden');
     }
   }
 
   /**
-   * Fetch QR code preview from backend
+   * Fetch QR code preview from Python backend
    */
   async function updatePreview() {
     if (!form) return;
 
     const dataValue = qrDataInput ? qrDataInput.value.trim() : '';
 
-    // Check empty state
     if (!dataValue) {
       if (previewImg) previewImg.classList.add('hidden');
       if (previewEmpty) previewEmpty.classList.remove('hidden');
       if (previewError) previewError.classList.add('hidden');
-      if (downloadBtn) {
-        downloadBtn.disabled = true;
-      }
+      if (downloadBtn) downloadBtn.disabled = true;
       if (downloadCaption) {
-        downloadCaption.textContent = 'Masukkan URL atau teks untuk mengaktifkan unduhan';
+        downloadCaption.textContent = 'Masukkan URL atau teks untuk membuat QR';
       }
       setPreviewState('empty');
       return;
     }
 
-    // Input exists: enable download & hide empty state
     if (previewEmpty) previewEmpty.classList.add('hidden');
     if (previewImg) previewImg.classList.remove('hidden');
     if (downloadBtn) downloadBtn.disabled = false;
@@ -302,7 +413,7 @@
   const debouncedPreview = debounce(updatePreview, 200);
 
   /**
-   * High-resolution Download Handler
+   * High-resolution Download Handler (1300px)
    */
   async function handleDownload() {
     if (!downloadBtn || !form || downloadBtn.disabled) return;
@@ -347,7 +458,7 @@
   }
 
   /**
-   * Color inputs sync & label display
+   * Sync hex labels for color inputs
    */
   function syncColorLabel(input) {
     const hexSpan = document.querySelector(`[data-hex-for="${input.name}"]`);
@@ -357,7 +468,7 @@
   }
 
   /**
-   * Frame Extra inputs toggle
+   * Toggle visibility of Frame extra options
    */
   function syncFrameExtraVisibility() {
     if (!frameExtra) return;
@@ -370,68 +481,7 @@
   }
 
   /**
-   * Accordion section active chip & toggle
-   */
-  function updateSectionChips() {
-    document.querySelectorAll('[data-accordion-btn]').forEach(btn => {
-      const targetId = btn.getAttribute('data-accordion-target');
-      const content = document.getElementById(targetId);
-      const chip = btn.querySelector('.section-chip');
-      const isOpen = content && content.classList.contains('is-open');
-
-      if (chip) {
-        if (isOpen) {
-          chip.classList.add('active');
-          chip.classList.remove('inactive');
-        } else {
-          chip.classList.remove('active');
-          chip.classList.add('inactive');
-        }
-      }
-    });
-  }
-
-  function setupAccordions() {
-    const headers = document.querySelectorAll('[data-accordion-btn]');
-
-    headers.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const targetId = btn.getAttribute('data-accordion-target');
-        const content = document.getElementById(targetId);
-        const icon = btn.querySelector('[data-accordion-icon]');
-        const isCurrentlyOpen = content.classList.contains('is-open');
-
-        // On mobile (< 640px), close other sections
-        if (window.innerWidth < 640) {
-          headers.forEach(otherBtn => {
-            const otherId = otherBtn.getAttribute('data-accordion-target');
-            if (otherId !== targetId) {
-              const otherContent = document.getElementById(otherId);
-              const otherIcon = otherBtn.querySelector('[data-accordion-icon]');
-              if (otherContent) otherContent.classList.remove('is-open');
-              otherBtn.setAttribute('aria-expanded', 'false');
-              if (otherIcon) otherIcon.classList.remove('rotate-180');
-            }
-          });
-        }
-
-        if (isCurrentlyOpen) {
-          content.classList.remove('is-open');
-          btn.setAttribute('aria-expanded', 'false');
-          if (icon) icon.classList.remove('rotate-180');
-        } else {
-          content.classList.add('is-open');
-          btn.setAttribute('aria-expanded', 'true');
-          if (icon) icon.classList.add('rotate-180');
-        }
-
-        updateSectionChips();
-      });
-    });
-  }
-
-  /**
-   * Quick Palette Presets
+   * Quick Palette Presets (DESIGN.md 4.6)
    */
   function setupColorPresets() {
     document.querySelectorAll('[data-preset-fg]').forEach(btn => {
@@ -464,24 +514,43 @@
   }
 
   /**
-   * Logo File upload handling
+   * Logo Dropzone & File Handling (DESIGN.md 4.8)
    */
-  function setupLogoHandler() {
-    if (!logoInput) return;
+  function setupLogoDropzone() {
+    if (!logoDropzone || !logoInput) return;
 
-    logoInput.addEventListener('change', () => {
-      if (logoInput.files && logoInput.files[0]) {
-        const file = logoInput.files[0];
-        if (logoName) logoName.textContent = file.name;
-        if (logoInfo) logoInfo.classList.remove('hidden');
-      } else {
-        if (logoInfo) logoInfo.classList.add('hidden');
-      }
-      updatePreview();
+    logoDropzone.addEventListener('click', () => {
+      logoInput.click();
     });
 
+    ['dragenter', 'dragover'].forEach(eventName => {
+      logoDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        logoDropzone.classList.add('drag-over');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      logoDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        logoDropzone.classList.remove('drag-over');
+      });
+    });
+
+    logoDropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        logoInput.files = e.dataTransfer.files;
+        handleLogoFileChange();
+      }
+    });
+
+    logoInput.addEventListener('change', handleLogoFileChange);
+
     if (clearLogoBtn) {
-      clearLogoBtn.addEventListener('click', () => {
+      clearLogoBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         logoInput.value = '';
         if (logoInfo) logoInfo.classList.add('hidden');
         updatePreview();
@@ -489,8 +558,19 @@
     }
   }
 
+  function handleLogoFileChange() {
+    if (logoInput.files && logoInput.files[0]) {
+      const file = logoInput.files[0];
+      if (logoName) logoName.textContent = file.name;
+      if (logoInfo) logoInfo.classList.remove('hidden');
+    } else {
+      if (logoInfo) logoInfo.classList.add('hidden');
+    }
+    updatePreview();
+  }
+
   /**
-   * Initialize Client Logic
+   * Initialize App Logic
    */
   function init() {
     initTheme();
@@ -504,14 +584,13 @@
       retryBtn.addEventListener('click', updatePreview);
     }
 
-    // Text inputs -> debounced preview & save
-    const textInputs = form.querySelectorAll('textarea, input[type="text"]');
-    textInputs.forEach(el => {
-      el.addEventListener('input', () => {
+    // Textarea input -> debounced preview & save
+    if (qrDataInput) {
+      qrDataInput.addEventListener('input', () => {
         saveSettings();
         debouncedPreview();
       });
-    });
+    }
 
     // Color inputs -> immediate label sync, contrast check, debounced preview & save
     const colorInputs = form.querySelectorAll('input[type="color"]');
@@ -531,6 +610,15 @@
       });
     });
 
+    // Frame text input
+    const frameTextInput = document.getElementById('frameTextInput');
+    if (frameTextInput) {
+      frameTextInput.addEventListener('input', () => {
+        saveSettings();
+        debouncedPreview();
+      });
+    }
+
     // Radio inputs (Shape & Frame) -> immediate preview & save
     const radioInputs = form.querySelectorAll('input[type="radio"]');
     radioInputs.forEach(el => {
@@ -543,19 +631,18 @@
       });
     });
 
-    // Setup modules
-    setupAccordions();
+    // Setup interactive modules
+    setupToolTabs();
     setupColorPresets();
-    setupLogoHandler();
+    setupLogoDropzone();
     checkContrastValidation();
-    updateSectionChips();
 
     // Download trigger
     if (downloadBtn) {
       downloadBtn.addEventListener('click', handleDownload);
     }
 
-    // Initial sync
+    // Initial sync & render
     syncFrameExtraVisibility();
     updatePreview();
   }
