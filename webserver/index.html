@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Immediate Theme Initialization (Prevents FOUC / White Flash on Reload) -->
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('qr_theme') || 'light';
+        if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Fonts: Inter (UI) & JetBrains Mono (Data/Code) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            indigo: 'var(--indigo)',
+            steel: 'var(--steel)',
+            sky: 'var(--sky)',
+            mint: 'var(--mint)',
+            bg: 'var(--bg)',
+            surface: 'var(--surface)',
+            'surface-raised': 'var(--surface-raised)',
+            border: 'var(--border)',
+            text: 'var(--text)',
+            'text-muted': 'var(--text-muted)',
+            'on-mint': 'var(--on-mint)',
+            'on-indigo': 'var(--on-indigo)',
+            danger: 'var(--danger)',
+            warning: 'var(--warning)',
+            success: 'var(--mint)',
+          },
+          fontFamily: {
+            ui: ['"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+          borderRadius: {
+            sm: '6px',
+            md: '10px',
+            lg: '14px',
+          }
+        }
+      }
+    };
+  </script>
+  
+  <!-- Design System CSS -->
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/app.js" defer></script>
+</head>
+<body class="min-h-full font-ui antialiased">
+
+  <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    
+    <!-- Header (DESIGN.md Section 3) -->
+    <header class="flex items-center justify-between pb-6 mb-8 border-b border-[var(--border)]">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text)]">QR Code Generator</h1>
+        <p class="text-xs sm:text-sm text-[var(--text-muted)]">High-resolution QR generator with custom styling and frames</p>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button type="button" id="themeToggleBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-[6px] border border-[var(--border)] bg-[var(--surface-raised)] text-xs text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--steel)] transition-colors" aria-label="Toggle theme">
+        <svg id="themeIconMoon" class="w-3.5 h-3.5 text-[var(--sky)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <svg id="themeIconSun" class="w-3.5 h-3.5 text-[var(--sky)] hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <span data-theme-label class="font-mono">Dark theme</span>
+      </button>
+    </header>
+
+    <!-- Main Workspace (DESIGN.md Section 3: 2 columns on desktop, responsive stack) -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- Left Column: Configuration (Desktop ~7/12, Mobile: order-2) -->
+      <section class="order-2 lg:order-1 lg:col-span-7 panel overflow-hidden">
+        
+        <!-- Panel Header -->
+        <div class="h-12 px-5 flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]">
+          <span class="text-xs font-semibold tracking-[0.04em] text-[var(--text-muted)] uppercase">Configuration</span>
+          <span class="font-mono text-xs text-[var(--text-muted)]">Live Sync</span>
+        </div>
+
+        <form id="qrForm" class="divide-y divide-[var(--border)]">
+          
+          <!-- Accordion 01: Content & Data -->
+          <div>
+            <button type="button" class="w-full h-14 px-5 flex items-center justify-between text-left bg-[var(--surface-raised)] hover:bg-[var(--border)]/40 transition-colors" data-accordion-btn data-accordion-target="acc-content-1" aria-expanded="true">
+              <span class="flex items-center gap-3">
+                <span class="section-chip active">01</span>
+                <span class="text-base font-semibold text-[var(--text)]">Content & Data</span>
+              </span>
+              <svg class="w-4 h-4 text-[var(--text-muted)] transition-transform duration-180 rotate-180" data-accordion-icon viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div id="acc-content-1" class="accordion-content is-open bg-[var(--surface)]">
+              <div class="accordion-inner">
+                <div class="p-5 sm:p-6 space-y-2">
+                  <label for="qrDataInput" class="block text-[13px] font-medium text-[var(--text-muted)]">Destination URL or Text</label>
+                  <textarea id="qrDataInput" name="data" rows="3" placeholder="https://example.com" class="w-full px-3.5 py-2.5 bg-[var(--surface-raised)] border border-[var(--border)] rounded-[6px] font-mono text-[15px] text-[var(--text)] placeholder-[var(--text-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--sky)] transition-colors resize-y">https://github.com/rizqyalfatah</textarea>
+                  <p class="text-xs text-[var(--text-muted)]">Accepts standard web URLs, plain text data, or payload strings.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 02: Color Palette -->
+          <div>
+            <button type="button" class="w-full h-14 px-5 flex items-center justify-between text-left bg-[var(--surface-raised)] hover:bg-[var(--border)]/40 transition-colors" data-accordion-btn data-accordion-target="acc-content-2" aria-expanded="false">
+              <span class="flex items-center gap-3">
+                <span class="section-chip inactive">02</span>
+                <span class="text-base font-semibold text-[var(--text)]">Color Palette</span>
+              </span>
+              <svg class="w-4 h-4 text-[var(--text-muted)] transition-transform duration-180" data-accordion-icon viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div id="acc-content-2" class="accordion-content bg-[var(--surface)]">
+              <div class="accordion-inner">
+                <div class="p-5 sm:p-6 space-y-4">
+                  
+                  <!-- Preset Quick Colors (DESIGN.md Section 4.4) -->
+                  <div>
+                    <span class="block text-[13px] font-medium text-[var(--text-muted)] mb-2">Preset Palettes</span>
+                    <div class="flex items-center gap-2">
+                      <button type="button" class="preset-swatch flex items-center justify-center bg-black" data-preset-fg="#000000" data-preset-bg="#ffffff" title="Classic Mono">
+                        <span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+                      </button>
+                      <button type="button" class="preset-swatch flex items-center justify-center bg-[#2F39A9]" data-preset-fg="#2F39A9" data-preset-bg="#ffffff" title="Indigo Studio">
+                        <span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+                      </button>
+                      <button type="button" class="preset-swatch flex items-center justify-center bg-[#2E6FA0]" data-preset-fg="#2E6FA0" data-preset-bg="#ffffff" title="Steel Blue">
+                        <span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+                      </button>
+                      <button type="button" class="preset-swatch flex items-center justify-center bg-[#49A4BB]" data-preset-fg="#49A4BB" data-preset-bg="#080B1F" title="Sky Deep">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#080B1F]"></span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Contrast warning (DESIGN.md Section 4.4) -->
+                  <div id="contrastWarning" class="hidden p-3 rounded-[6px] border border-[var(--warning)]/30 bg-[var(--warning)]/10 text-[var(--warning)] text-xs flex items-center gap-2.5">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>Kontras rendah, QR mungkin sulit dipindai</span>
+                  </div>
+
+                  <!-- Field 1: Dots Color -->
+                  <div class="flex items-center justify-between p-3.5 bg-[var(--surface-raised)] border border-[var(--border)] rounded-[6px]">
+                    <div>
+                      <div class="text-[14px] font-medium text-[var(--text)]">Foreground (Dots)</div>
+                      <div class="text-xs text-[var(--text-muted)]">Matrix code data modules</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <span class="font-mono text-xs text-[var(--text-muted)]" data-hex-for="data_color">#000000</span>
+                      <input type="color" name="data_color" value="#000000" class="color-picker-input" aria-label="Foreground Color">
+                    </div>
+                  </div>
+
+                  <!-- Field 2: Eyes Color -->
+                  <div class="flex items-center justify-between p-3.5 bg-[var(--surface-raised)] border border-[var(--border)] rounded-[6px]">
+                    <div>
+                      <div class="text-[14px] font-medium text-[var(--text)]">Eyes Color</div>
+                      <div class="text-xs text-[var(--text-muted)]">Corner finder pattern markers</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <span class="font-mono text-xs text-[var(--text-muted)]" data-hex-for="eye_color">#000000</span>
+                      <input type="color" name="eye_color" value="#000000" class="color-picker-input" aria-label="Eyes Color">
+                    </div>
+                  </div>
+
+                  <!-- Field 3: Background Color -->
+                  <div class="flex items-center justify-between p-3.5 bg-[var(--surface-raised)] border border-[var(--border)] rounded-[6px]">
+                    <div>
+                      <div class="text-[14px] font-medium text-[var(--text)]">Background Color</div>
+                      <div class="text-xs text-[var(--text-muted)]">Canvas fill behind code</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <span class="font-mono text-xs text-[var(--text-muted)]" data-hex-for="bg_color">#FFFFFF</span>
+                      <input type="color" name="bg_color" value="#ffffff" class="color-picker-input" aria-label="Background Color">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 03: Pattern & Center Logo -->
+          <div>
+            <button type="button" class="w-full h-14 px-5 flex items-center justify-between text-left bg-[var(--surface-raised)] hover:bg-[var(--border)]/40 transition-colors" data-accordion-btn data-accordion-target="acc-content-3" aria-expanded="false">
+              <span class="flex items-center gap-3">
+                <span class="section-chip inactive">03</span>
+                <span class="text-base font-semibold text-[var(--text)]">Pattern & Center Logo</span>
+              </span>
+              <svg class="w-4 h-4 text-[var(--text-muted)] transition-transform duration-180" data-accordion-icon viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div id="acc-content-3" class="accordion-content bg-[var(--surface)]">
+              <div class="accordion-inner">
+                <div class="p-5 sm:p-6 space-y-5">
+                  
+                  <!-- Module Shape (DESIGN.md Section 4.5: 64px box, radius 10px, border-steel when selected) -->
+                  <div>
+                    <span class="block text-[13px] font-medium text-[var(--text-muted)] mb-2.5">Module Shape</span>
+                    <div class="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-3 gap-2.5" role="radiogroup" aria-label="Module Shape">
+                      
+                      <!-- Square -->
+                      <label class="cursor-pointer">
+                        <input type="radio" name="shape" value="square" class="peer sr-only" checked>
+                        <div class="h-16 flex flex-col items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--steel)] hover:text-[var(--text)] peer-checked:border-2 peer-checked:border-[var(--steel)] peer-checked:bg-[var(--surface-raised)] peer-checked:text-[var(--text)] transition-all">
+                          <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="4" y="4" width="16" height="16" rx="1"></rect>
+                          </svg>
+                          <span class="text-xs font-medium">Square</span>
+                        </div>
+                      </label>
+
+                      <!-- Circle -->
+                      <label class="cursor-pointer">
+                        <input type="radio" name="shape" value="circle" class="peer sr-only">
+                        <div class="h-16 flex flex-col items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--steel)] hover:text-[var(--text)] peer-checked:border-2 peer-checked:border-[var(--steel)] peer-checked:bg-[var(--surface-raised)] peer-checked:text-[var(--text)] transition-all">
+                          <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="8"></circle>
+                          </svg>
+                          <span class="text-xs font-medium">Circle</span>
+                        </div>
+                      </label>
+
+                      <!-- Rounded -->
+                      <label class="cursor-pointer">
+                        <input type="radio" name="shape" value="rounded" class="peer sr-only">
+                        <div class="h-16 flex flex-col items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--steel)] hover:text-[var(--text)] peer-checked:border-2 peer-checked:border-[var(--steel)] peer-checked:bg-[var(--surface-raised)] peer-checked:text-[var(--text)] transition-all">
+                          <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="4" y="4" width="16" height="16" rx="5"></rect>
+                          </svg>
+                          <span class="text-xs font-medium">Rounded</span>
+                        </div>
+                      </label>
+
+                      <!-- Vertical -->
+                      <label class="cursor-pointer">
+                        <input type="radio" name="shape" value="vertical" class="peer sr-only">
+                        <div class="h-16 flex flex-col items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--steel)] hover:text-[var(--text)] peer-checked:border-2 peer-checked:border-[var(--steel)] peer-checked:bg-[var(--surface-raised)] peer-checked:text-[var(--text)] transition-all">
+                          <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="5" y="4" width="5" height="16" rx="1"></rect>
+                            <rect x="14" y="4" width="5" height="16" rx="1"></rect>
+                          </svg>
+                          <span class="text-xs font-medium">Vertical</span>
+                        </div>
+                      </label>
+
+                      <!-- Horizontal -->
+                      <label class="cursor-pointer">
+                        <input type="radio" name="shape" value="horizontal" class="peer sr-only">
+                        <div class="h-16 flex flex-col items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--steel)] hover:text-[var(--text)] peer-checked:border-2 peer-checked:border-[var(--steel)] peer-checked:bg-[var(--surface-raised)] peer-checked:text-[var(--text)] transition-all">
+                          <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="4" y="5" width="16" height="5" rx="1"></rect>
+                            <rect x="4" y="14" width="16" height="5" rx="1"></rect>
+                          </svg>
+                          <span class="text-xs font-medium">Horizontal</span>
+                        </div>
+                      </label>
+
+                      <!-- Circuit -->
+                      <label class="cursor-pointer">
+                        <input type="radio" name="shape" value="circuit" class="peer sr-only">
+                        <div class="h-16 flex flex-col items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--steel)] hover:text-[var(--text)] peer-checked:border-2 peer-checked:border-[var(--steel)] peer-checked:bg-[var(--surface-raised)] peer-checked:text-[var(--text)] transition-all">
+                          <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="6" cy="6" r="3" fill="currentColor"></circle>
+                            <circle cx="18" cy="18" r="3" fill="currentColor"></circle>
+                            <path d="M9 6h6a3 3 0 0 1 3 3v6"></path>
+                          </svg>
+                          <span class="text-xs font-medium">Circuit</span>
+                        </div>
+                      </label>
+
+                    </div>
+                  </div>
+
+                  <!-- Logo Upload -->
+                  <div class="pt-4 border-t border-[var(--border)]">
+                    <label for="logoInput" class="block text-[13px] font-medium text-[var(--text-muted)] mb-2">Center Logo</label>
+                    <input type="file" id="logoInput" name="logo" accept="image/*" class="w-full text-xs text-[var(--text-muted)] bg-[var(--surface-raised)] border border-[var(--border)] rounded-[6px] p-2 focus:outline-none">
+                    
+                    <div id="logoFileInfo" class="hidden mt-2.5 flex items-center justify-between px-3 py-2 bg-[var(--surface-raised)] border border-[var(--border)] rounded-[6px] text-xs">
+                      <span id="logoFileName" class="text-[var(--text)] truncate max-w-[200px]"></span>
+                      <button type="button" id="clearLogoBtn" class="text-[var(--danger)] hover:underline font-medium ml-2">Remove</button>
+                    </div>
+                    <p class="text-xs text-[var(--text-muted)] mt-1.5">Recommended PNG or SVG with transparent background.</p>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 04: Frame & Typography -->
+          <div>
+            <button type="button" class="w-full h-14 px-5 flex items-center justify-between text-left bg-[var(--surface-raised)] hover:bg-[var(--border)]/40 transition-colors" data-accordion-btn data-accordion-target="acc-content-4" aria-expanded="false">
+              <span class="flex items-center gap-3">
+                <span class="section-chip inactive">04</span>
+                <span class="text-base font-semibold text-[var(--text)]">Frame & Typography</span>
+              </span>
+              <svg class="w-4 h-4 text-[var(--text-muted)] transition-transform duration-180" data-accordion-icon viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div id="acc-content-4" class="accordion-content bg-[var(--surface)]">
+              <div class="accordion-inner">
+                <div class="p-5 sm:p-6 space-y-4">
+                  
+                  <!-- Frame Styles -->
+                  <div>
+                    <span class="block text-[13px] font-medium text-[var(--text-muted)] mb-2.5">Frame Style</span>
+                    <div class="grid grid-cols-3 sm:grid-cols-5 gap-2.5" role="radiogroup" aria-label="Frame Style">
+                      
+                      <!-- None -->
+                      <label class="cursor-pointer">
+                        <input type="radio" name="frame_style" value="none" class="peer sr-only" checked>
+                        <div class="h-16 flex flex-col items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--steel)] hover:text-[var(--text)] peer-checked:border-2 peer-checked:border-[var(--steel)] peer-checked:bg-[var(--surface-raised)] peer-checked:text-[var(--text)] transition-all">
+                          <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <line x1="5.7" y1="5.7" x2="18.3" y2="18.3"></line>
+                          </svg>
+                          <span class="text-xs font-medium">None</span>
+                        </div>
+                      </label>
+
+                      <!-- Top -->
+                      <label class="cursor-pointer">
+                        <input type="radio" name="frame_style" value="text_top" class="peer sr-only">
+                        <div class="h-16 flex flex-col items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--steel)] hover:text-[var(--text)] peer-checked:border-2 peer-checked:border-[var(--steel)] peer-checked:bg-[var(--surface-raised)] peer-checked:text-[var(--text)] transition-all">
+                          <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" y1="4" x2="20" y2="4" stroke-width="2.5"></line>
+                            <rect x="4" y="8" width="16" height="12" rx="2"></rect>
+                          </svg>
+                          <span class="text-xs font-medium">Top</span>
+                        </div>
+                      </label>
+
+                      <!-- Bottom -->
+                      <label class="cursor-pointer">
+                        <input type="radio" name="frame_style" value="text_bottom" class="peer sr-only">
+                        <div class="h-16 flex flex-col items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--steel)] hover:text-[var(--text)] peer-checked:border-2 peer-checked:border-[var(--steel)] peer-checked:bg-[var(--surface-raised)] peer-checked:text-[var(--text)] transition-all">
+                          <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="4" width="16" height="12" rx="2"></rect>
+                            <line x1="4" y1="20" x2="20" y2="20" stroke-width="2.5"></line>
+                          </svg>
+                          <span class="text-xs font-medium">Bottom</span>
+                        </div>
+                      </label>
+
+                      <!-- Bubble -->
+                      <label class="cursor-pointer">
+                        <input type="radio" name="frame_style" value="box_top" class="peer sr-only">
+                        <div class="h-16 flex flex-col items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--steel)] hover:text-[var(--text)] peer-checked:border-2 peer-checked:border-[var(--steel)] peer-checked:bg-[var(--surface-raised)] peer-checked:text-[var(--text)] transition-all">
+                          <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="3" width="16" height="6" rx="2" fill="currentColor" fill-opacity="0.3"></rect>
+                            <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+                          </svg>
+                          <span class="text-xs font-medium">Bubble</span>
+                        </div>
+                      </label>
+
+                      <!-- Label -->
+                      <label class="cursor-pointer">
+                        <input type="radio" name="frame_style" value="box_bottom" class="peer sr-only">
+                        <div class="h-16 flex flex-col items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--steel)] hover:text-[var(--text)] peer-checked:border-2 peer-checked:border-[var(--steel)] peer-checked:bg-[var(--surface-raised)] peer-checked:text-[var(--text)] transition-all">
+                          <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="3" width="16" height="10" rx="2"></rect>
+                            <rect x="4" y="15" width="16" height="6" rx="2" fill="currentColor" fill-opacity="0.3"></rect>
+                          </svg>
+                          <span class="text-xs font-medium">Label</span>
+                        </div>
+                      </label>
+
+                    </div>
+                  </div>
+
+                  <!-- Frame Customization Details (Hidden when frame_style == 'none') -->
+                  <div id="frameExtra" class="hidden pt-4 border-t border-[var(--border)] space-y-3.5">
+                    <div>
+                      <label for="frameTextInput" class="block text-[13px] font-medium text-[var(--text-muted)] mb-1.5">Banner Caption</label>
+                      <input type="text" id="frameTextInput" name="frame_text" value="SCAN ME" class="w-full px-3.5 py-2.5 bg-[var(--surface-raised)] border border-[var(--border)] rounded-[6px] text-[15px] text-[var(--text)] placeholder-[var(--text-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--sky)] transition-colors">
+                    </div>
+
+                    <div class="flex items-center justify-between p-3.5 bg-[var(--surface-raised)] border border-[var(--border)] rounded-[6px]">
+                      <div>
+                        <div class="text-[14px] font-medium text-[var(--text)]">Frame Color</div>
+                        <div class="text-xs text-[var(--text-muted)]">Frame background color (Default Indigo)</div>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <span class="font-mono text-xs text-[var(--text-muted)]" data-hex-for="frame_color">#2F39A9</span>
+                        <input type="color" name="frame_color" value="#2F39A9" class="color-picker-input" aria-label="Frame Color">
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-3.5 bg-[var(--surface-raised)] border border-[var(--border)] rounded-[6px]">
+                      <div>
+                        <div class="text-[14px] font-medium text-[var(--text)]">Text Color</div>
+                        <div class="text-xs text-[var(--text-muted)]">Text caption color</div>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <span class="font-mono text-xs text-[var(--text-muted)]" data-hex-for="text_color">#FFFFFF</span>
+                        <input type="color" name="text_color" value="#ffffff" class="color-picker-input" aria-label="Text Color">
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </section>
+
+      <!-- Right Column: Live Preview & Export (DESIGN.md Section 3 & 4.6) -->
+      <!-- Desktop: sticky top-6, ~5/12; Mobile: order-1 rendered on top -->
+      <aside class="order-1 lg:order-2 lg:col-span-5 panel p-5 sm:p-6 lg:sticky lg:top-6 self-start space-y-5">
+        
+        <!-- Preview Header -->
+        <div class="flex items-center justify-between pb-3.5 border-b border-[var(--border)]">
+          <span class="text-xs font-semibold tracking-[0.04em] text-[var(--text-muted)] uppercase">Live Preview</span>
+          <span id="previewStatus" class="font-mono text-xs text-[var(--mint)]" aria-live="polite">Initializing…</span>
+        </div>
+
+        <!-- Canvas Card: ALWAYS WHITE (#FFFFFF, radius 14px, padding 24px) -->
+        <div class="relative bg-white rounded-[14px] p-6 border border-slate-200/50 flex flex-col items-center justify-center min-h-[300px] max-h-[420px] overflow-hidden">
+          
+          <!-- Image Element -->
+          <img id="qrImage" src="" alt="Live generated QR code" class="max-w-full max-h-[360px] object-contain transition-opacity duration-100">
+
+          <!-- Empty State (DESIGN.md Section 4.8) -->
+          <div id="previewEmpty" class="hidden flex flex-col items-center justify-center text-center p-6 text-slate-500">
+            <svg class="w-12 h-12 mb-3 text-slate-400 stroke-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <p class="text-sm font-medium text-slate-700">Masukkan URL atau teks untuk membuat QR</p>
+            <p class="text-xs text-slate-400 mt-1">Preview instan akan muncul di sini</p>
+          </div>
+
+          <!-- Error State (DESIGN.md Section 4.8) -->
+          <div id="previewError" class="hidden absolute inset-0 bg-white/95 flex flex-col items-center justify-center text-center p-6">
+            <svg class="w-10 h-10 mb-2 text-[var(--danger)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p id="previewErrorMsg" class="text-sm font-medium text-slate-800">Gagal membuat QR: server tidak merespons</p>
+            <button type="button" id="retryBtn" class="mt-3 text-xs font-semibold text-[var(--indigo)] hover:underline">Coba lagi</button>
+          </div>
+
+        </div>
+
+        <!-- Download HD Button (DESIGN.md Section 4.7: Primary Mint with on-mint dark text) -->
+        <div>
+          <button type="button" id="downloadBtn" class="btn-primary w-full shadow-sm">
+            <!-- Download icon: 18px on the left -->
+            <svg class="w-[18px] h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download HD (1300px)</span>
+          </button>
+          
+          <!-- Caption below button (DESIGN.md Section 4.7) -->
+          <p id="downloadCaption" class="text-xs text-[var(--text-muted)] text-center mt-2">PNG 1300px, dibuat oleh server Python</p>
+        </div>
+
+      </aside>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

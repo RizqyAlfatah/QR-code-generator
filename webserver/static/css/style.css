@@ -1,0 +1,244 @@
+/* DESIGN.md Implementation — QR Code Generator Design System */
+
+:root {
+  /* Core Palette (Color Hunt) */
+  --indigo: #2F39A9;
+  --steel:  #2E6FA0;
+  --sky:    #2E6FA0;
+  --mint:   #15D8B3;
+
+  /* Neutral Light (Default) */
+  --bg: #F5F6FD;
+  --surface: #FFFFFF;
+  --surface-raised: #ECEEFA;
+  --border: #D5D9F0;
+  --text: #12163A;
+  --text-muted: #5A6190;
+  --on-mint: #080B1F;
+  --on-indigo: #FFFFFF;
+
+  /* State */
+  --danger: #FF6B6B;
+  --warning: #F5B84B;
+  --success: var(--mint);
+
+  /* Typography */
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+}
+
+:root[data-theme="dark"] {
+  --sky: #49A4BB;
+  --bg: #080B1F;
+  --surface: #0F1330;
+  --surface-raised: #171C45;
+  --border: #252B5C;
+  --text: #E8EAFB;
+  --text-muted: #9AA0D0;
+}
+
+/* Base resets & typography */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+}
+
+/* Smooth transition ONLY when user explicitly toggles theme (avoids refresh flicker) */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *:before,
+html.theme-transitioning *:after {
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease !important;
+}
+
+/* Panels */
+.panel {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+/* Focus visible ring */
+:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
+/* Accordion Smooth Grid-based Collapse */
+.accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 180ms ease, visibility 180ms;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.accordion-content.is-open {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}
+
+.accordion-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+
+/* Section number chip */
+.section-chip {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.section-chip.active {
+  background-color: var(--indigo);
+  color: #FFFFFF;
+}
+
+.section-chip.inactive {
+  background-color: transparent;
+  color: var(--sky);
+}
+
+/* Primary Button (Mint accent) */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 48px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-md);
+  background-color: var(--mint);
+  color: var(--on-mint);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  transition: filter 120ms ease, transform 100ms ease, opacity 120ms ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Color input swatch styling */
+.color-picker-input {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.color-picker-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-input::-webkit-color-swatch {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.color-picker-input::-moz-color-swatch {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+/* Preset color swatch */
+.preset-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform 100ms ease, border-color 100ms ease;
+}
+
+.preset-swatch:hover {
+  transform: scale(1.05);
+  border-color: var(--steel);
+}
+
+/* File selector input */
+input[type="file"]::file-selector-button {
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-weight: 500;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  margin-right: 12px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+  border-color: var(--steel);
+  background: var(--border);
+}
+
+/* Clean scrollbar for monospace textarea */
+textarea::-webkit-scrollbar {
+  width: 6px;
+}
+textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+textarea::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+textarea::-webkit-scrollbar-thumb:hover {
+  background: var(--steel);
+}
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
